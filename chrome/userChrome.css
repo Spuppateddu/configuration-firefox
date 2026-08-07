@@ -1,0 +1,203 @@
+/* Chromeless Firefox — no browser UI, toggled with a key, without fullscreen.
+ *
+ * Derived from autohide_toolbox.css
+ * (https://github.com/MrOtherGuy/firefox-csshacks/tree/master/chrome), made
+ * available under Mozilla Public License v. 2.0 — see that repo for the full
+ * license text. The folding mechanism below is theirs; the trigger is not.
+ *
+ * ── How the toggle works ────────────────────────────────────────────────────
+ * Firefox has no pref and no key for "hide the toolbar", and binding a custom
+ * hotkey to one would need a userChrome.js loader (fx-autoconfig) installed
+ * into Firefox's *application* directory — read-only squashfs back when this was
+ * the Ubuntu snap. (70-firefox.sh now installs the deb, so /usr/lib/firefox is
+ * writable and a real hotkey is possible; this toggle still works, so it stays.)
+ * So we borrow a toggle Firefox already ships:
+ *
+ *     Ctrl+Shift+B   flips browser.toolbars.bookmarks.visibility, which Firefox
+ *                    reflects onto #PersonalToolbar as a `collapsed` attribute.
+ *
+ * We never render the bookmarks bar itself — it is used only as a state bit,
+ * and the whole #navigator-toolbox is driven from it. Unlike F11 this leaves
+ * the window alone, so i3 keeps tiling it and the status bar stays put.
+ *
+ * Ctrl+L still works while the chrome is hidden: focusing the urlbar reveals
+ * the toolbar for as long as it holds focus (see the :focus-within rules), then
+ * it folds away again. Hovering does NOT reveal it — that is deliberate, so
+ * moving the mouse near the top edge never breaks the chromeless look.
+ *
+ * user.js pins browser.toolbars.bookmarks.visibility to "never", so every
+ * launch starts chromeless; the toggle lasts for the session.
+ */
+
+:root{
+  --uc-toolbox-rotation: 82deg;  /* how far the toolbox folds away when hidden */
+}
+
+/* ── Density: make the chrome short when it IS shown ───────────────────────
+ * user.js sets browser.uidensity = 1, Firefox's built-in "Compact" density —
+ * Customize Toolbar hides that option unless you've picked it before, but the
+ * pref works regardless. Compact alone takes the tab strip 36px → 29px, the
+ * urlbar 32px → 26px and toolbar-button padding 8px → 6px (values from
+ * Firefox 149's tabbrowser/tabs.css, urlbar-variables.css, toolbarbuttons.css).
+ *
+ * These four go tighter still, and are the numbers to tune. --tab-label-height
+ * sizes the label box inside a tab, so keep it just under --tab-min-height or
+ * the text overflows the tab it sits in. */
+:root{
+  --tab-min-height: 26px !important;
+  --tab-label-height: 1.7em !important;
+  --tab-block-margin: 1px !important;
+  --urlbar-min-height: 26px !important;
+  --toolbarbutton-inner-padding: 3px !important;
+  --toolbarbutton-outer-padding: 1px !important;
+}
+
+/* ── Chrome UI font size ───────────────────────────────────────────────────
+ * Firefox on Linux takes its *chrome* font from GTK, not from any of its own
+ * prefs: gtk-font-name in ~/.i3rc/gtk/settings.ini is "Courier Prime 11", and
+ * 11pt at 96dpi lands the tab labels, the urlbar and the awesomebar dropdown
+ * on ~14.7px — noticeably larger than the 12px user.js gives page text
+ * (font.size.variable.x-western). Settings exposes no control for it, and the
+ * font.* prefs in user.js are content-only.
+ *
+ * So pin it here instead of lowering gtk-font-name, which would also shrink
+ * nm-applet, blueman, nautilus, zenity dialogs and Firefox's own GTK file
+ * picker — a size that suits a toolbar is cramped in a dialog.
+ *
+ * Keep in step with font.size.variable.x-western in user.js. Note this is the
+ * base --tab-label-height above resolves its 1.7em against, so it must stay
+ * comfortably below --tab-min-height (26px); at 12px that em lands on 20.4px. */
+:root{
+  font-size: 12px !important;
+}
+
+:root[sizemode="maximized"]{
+  --uc-toolbox-rotation: 88.5deg;
+}
+
+:root[sizemode="fullscreen"],
+:root[sizemode="fullscreen"] #navigator-toolbox{ margin-top: 0 !important; }
+
+/* ── The state bit, never rendered ─────────────────────────────────────────
+ * Ctrl+Shift+B toggles this element's `collapsed` attribute. Keep it out of
+ * sight in both states — we only ever read it in the selectors below. */
+#PersonalToolbar{ display: none !important; }
+
+/* ── Hidden (the default) ──────────────────────────────────────────────────
+ * position:fixed takes the toolbox out of flow so page content fills the whole
+ * window; the rotation + opacity fold it away. Deliberately not display:none,
+ * which would break urlbar focus and panel anchoring. */
+#navigator-toolbox{
+  --browser-area-z-index-toolbox: 3;
+  position: fixed !important;
+  background: inherit;
+  background-color: var(--lwt-accent-color,black) !important;
+  transition: transform 82ms linear, opacity 82ms linear !important;
+  transform-origin: top;
+  transform: rotateX(var(--uc-toolbox-rotation));
+  opacity: 0;
+  line-height: 0;
+  z-index: 1;
+  pointer-events: none;
+  width: 100vw;
+}
+
+/* Firefox 133+ renders the urlbar as a popover, which escapes the toolbox and
+ * would stay visible on its own — fold it away with the same timing. */
+:root[sessionrestored] toolbar #searchbar-new[popover],
+:root[sessionrestored] #urlbar[popover]{
+  pointer-events: none;
+  opacity: 0;
+  transition: transform 82ms linear, opacity 0ms 82ms;
+  transform-origin: 0px calc(0px - var(--tab-min-height) - var(--tab-block-margin) * 2);
+  transform: rotateX(89.9deg);
+}
+
+/* ── Shown: Ctrl+Shift+B ───────────────────────────────────────────────────
+ * The attribute is absent when the bar is on. Firefox has spelled "off" as
+ * both collapsed="" and collapsed="true" over the years, so test for presence
+ * rather than value, and accept an explicit "false" too.
+ *
+ * position:relative puts the toolbox back *in flow*, so the page is pushed
+ * down instead of being overlapped — this is a pinned toolbar, not a peek. */
+:root:has(#PersonalToolbar:not([collapsed])) #navigator-toolbox,
+:root:has(#PersonalToolbar[collapsed="false"]) #navigator-toolbox{
+  position: relative !important;
+  transform: none !important;
+  opacity: 1 !important;
+  line-height: normal;
+  pointer-events: auto;
+  transition: none !important;
+}
+
+/* ── Peek: Ctrl+L, customize mode, and modal/panel states ──────────────────
+ * Anything that focuses the urlbar (Ctrl+L, Vimium's `o`, a keyword search)
+ * or opens a panel anchored in the chrome reveals the toolbar while it lasts.
+ * :hover is intentionally absent from every selector here. */
+:root:is([window-modal-open],[customizing]) toolbar #searchbar-new[popover],
+:root:is([window-modal-open],[customizing]) #urlbar[popover],
+#mainPopupSet:has(> [panelopen]:not(#ask-chat-shortcuts,#selection-shortcut-action-panel,#chat-shortcuts-options-panel,#tab-preview-panel), > #tab-group-editor > [panelopen]) ~ toolbox :is(.urlbar,#urlbar[popover]),
+#navigator-toolbox:is(:focus-within,[movingtab]) :is(.urlbar,#urlbar[popover]),
+:where(:root[sessionrestored]) #navigator-toolbox .urlbar[popover]:is([focused],[open]),
+:where(:root[sessionrestored]) #urlbar-container > #urlbar[popover]:is([focused],[open]){
+  pointer-events: auto;
+  opacity: 1;
+  transition-delay: 33ms;
+  transform: rotateX(0deg);
+}
+
+:root[window-modal-open] #navigator-toolbox,
+#mainPopupSet:has(> [panelopen]:not(#ask-chat-shortcuts,#selection-shortcut-action-panel,#chat-shortcuts-options-panel,#tab-preview-panel), > #tab-group-editor > [panelopen]) ~ toolbox,
+#navigator-toolbox:has(#urlbar:is([open],[focus-within])),
+#navigator-toolbox:has(.urlbar:is([open],[focus-within])),
+#navigator-toolbox:is(:focus-within,[movingtab]){
+  transition-delay: 33ms !important;
+  transform: rotateX(0);
+  opacity: 1;
+}
+
+#navigator-toolbox > *{ line-height: normal; pointer-events: auto }
+
+/* ── Peek: the navigation keys, for a second ───────────────────────────────
+ * firefox.cfg sets `ble-peek` on the root element when Super+h/l, Super+j/k or
+ * Super+1..9 fire, and whenever a tab closes. Overlays rather than
+ * position:relative, so the page doesn't jump under you and back a second
+ * later. */
+:root[ble-peek] #navigator-toolbox{
+  transition-delay: 0ms !important;
+  transform: rotateX(0) !important;
+  opacity: 1 !important;
+}
+
+/* The urlbar is a popover since Firefox 133 and folds separately — without this
+ * the header appears with a hole where the address bar belongs. */
+:root[ble-peek] toolbar #searchbar-new[popover],
+:root[ble-peek] #urlbar[popover]{
+  opacity: 1;
+  transition-delay: 0ms;
+  transform: rotateX(0deg);
+}
+
+/* Click-through: it overlays the page, and the rule above gives every child
+ * pointer-events:auto. Skipped when pinned (Ctrl+Shift+B) — that one is in flow
+ * and must stay clickable. */
+:root[ble-peek]:not(:has(#PersonalToolbar:not([collapsed]), #PersonalToolbar[collapsed="false"])) #navigator-toolbox,
+:root[ble-peek]:not(:has(#PersonalToolbar:not([collapsed]), #PersonalToolbar[collapsed="false"])) #navigator-toolbox > *{
+  pointer-events: none !important;
+}
+
+/* Don't apply the transform before the window has been fully created. */
+:root:not([sessionrestored]) #navigator-toolbox{ transform:none !important }
+
+:root[customizing] #navigator-toolbox{
+  position: relative !important;
+  transform: none !important;
+  opacity: 1 !important;
+}
+
+#navigator-toolbox[inFullscreen] > #PersonalToolbar{ display: none }
+
+/* Hacky fix for the urlbar collapsing to zero height after leaving customize mode. */
+:is(#urlbar,.urlbar)[breakout][breakout-extend] > .urlbar-input-container{
+  padding-block: calc(min(4px,(var(--urlbar-container-height) - var(--urlbar-height)) / 2) + var(--urlbar-container-padding)) !important;
+}

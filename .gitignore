@@ -1,0 +1,9 @@
+# OS / editor junk
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Backups install.sh leaves next to what it replaced, if it was ever run in-tree
+*.backup
+*.backup.*
