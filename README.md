@@ -25,7 +25,7 @@ up front with all its others, so the installer doesn't have to.
 | --- | --- |
 | `install.sh` | applies everything below; safe to re-run, and it is re-run at every boot |
 | `user.js` | curated prefs — toolbar layout, Gruvbox theme, blank new tab, no autofill/password manager, no speculative prefetch |
-| `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back |
+| `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back, hovering the top edge peeks |
 | `extensions.conf` | the add-on catalogue, as `id\|amo-slug\|label\|default` |
 | `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS |
 | `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings, installed into `/usr/lib/firefox` |
@@ -133,9 +133,24 @@ purely as a state bit, and the whole `#navigator-toolbox` is driven from it.
 
 Unlike `F11` this leaves the window alone, so i3 keeps tiling it and the status
 bar stays put. `Ctrl+L` still reveals the toolbar for as long as the urlbar holds
-focus; **hovering does not**, so the chromeless look never breaks by accident.
-`user.js` pins the pref to `never`, so each launch starts chromeless and the
-toggle lasts for the session.
+focus. `user.js` pins the pref to `never`, so each launch starts chromeless and
+the toggle lasts for the session.
+
+### Hovering the top edge
+
+**Resting the cursor on the top few pixels of the window unfolds the header**,
+and moving off folds it away again. Folded, the toolbox is still there — the
+rotation only tips it away — so it keeps a hit area the height of its own
+projection, and that band is the trigger. The band is the header height times
+`cos(--uc-toolbox-rotation)`: about 8px at the default `82deg`, but only ~1.5px
+in the `88.5deg` maximized case, so lower that value if the edge feels
+unreachable when maximized.
+
+`--uc-hover-delay` (150ms) is the intent filter: a cursor merely crossing the top
+of the page leaves before the delay elapses and nothing appears. Unlike the peek
+below, a hovered header is **clickable** — you hover it to reach a button — and
+it overlays the page rather than pushing it down. Both live in `userChrome.css`;
+deleting its hover section restores a chrome that hover cannot reveal at all.
 
 ## Tab keys, bound at the browser level
 

@@ -22,8 +22,8 @@
  *
  * Ctrl+L still works while the chrome is hidden: focusing the urlbar reveals
  * the toolbar for as long as it holds focus (see the :focus-within rules), then
- * it folds away again. Hovering does NOT reveal it — that is deliberate, so
- * moving the mouse near the top edge never breaks the chromeless look.
+ * it folds away again. Resting the cursor on the very top edge reveals it too —
+ * see the hover section near the bottom.
  *
  * user.js pins browser.toolbars.bookmarks.visibility to "never", so every
  * launch starts chromeless; the toggle lasts for the session.
@@ -31,6 +31,7 @@
 
 :root{
   --uc-toolbox-rotation: 82deg;  /* how far the toolbox folds away when hidden */
+  --uc-hover-delay: 150ms;       /* rest this long on the top edge to unfold */
 }
 
 /* ── Density: make the chrome short when it IS shown ───────────────────────
@@ -157,6 +158,25 @@
 }
 
 #navigator-toolbox > *{ line-height: normal; pointer-events: auto }
+
+/* ── Peek: hovering the top edge ───────────────────────────────────────────
+ * The folded toolbox still takes hit area — height × cos(rotation), ~8px at
+ * 82deg, ~1.5px maximized. The delay filters out a cursor merely passing by. */
+#navigator-toolbox:hover{
+  transition-delay: var(--uc-hover-delay);
+  transform: rotateX(0);
+  opacity: 1;
+}
+
+/* The urlbar is a popover since Firefox 133 and folds separately — without this
+ * the header appears with a hole where the address bar belongs. */
+:root:has(#navigator-toolbox:hover) toolbar #searchbar-new[popover],
+:root:has(#navigator-toolbox:hover) #urlbar[popover]{
+  pointer-events: auto;
+  opacity: 1;
+  transition-delay: var(--uc-hover-delay);
+  transform: rotateX(0deg);
+}
 
 /* ── Peek: the navigation keys, for a second ───────────────────────────────
  * firefox.cfg sets `ble-peek` on the root element when Super+h/l, Super+j/k or
