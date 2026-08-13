@@ -55,7 +55,7 @@
 
 /* ── Chrome UI font size ───────────────────────────────────────────────────
  * Firefox on Linux takes its *chrome* font from GTK, not from any of its own
- * prefs: gtk-font-name in ~/.i3rc/gtk/settings.ini is "Courier Prime 11", and
+ * prefs: gtk-font-name in ~/.i3rc/gtk/settings.ini is "Cascadia Code 11", and
  * 11pt at 96dpi lands the tab labels, the urlbar and the awesomebar dropdown
  * on ~14.7px — noticeably larger than the 12px user.js gives page text
  * (font.size.variable.x-western). Settings exposes no control for it, and the

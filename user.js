@@ -44,30 +44,28 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 // ── Fonts ────────────────────────────────────────────────────────────────────
 // The size of ordinary page text: font.default.x-western below is sans-serif,
 // so this — not font.size.monospace — is what an unstyled page lands on.
-// Courier Prime's x-height is 0.452em against JetBrainsMono's 0.550em, so it
-// reads below nominal; 14–15 is roughly the match if it reads too small. The
-// same thing once made UbuntuMono need 14. Nothing downstream depends on this
-// number, unlike the desktop sizes, so it is the cheapest one in the repo to
-// change — but keep font.size.monospace.x-western in step with it.
+// Cascadia Code's x-height is 0.518em against JetBrainsMono's 0.550em, so it
+// reads close to nominal; drop to 11 if it now reads too big. Nothing downstream
+// depends on this number, unlike the desktop sizes, so it is the cheapest one in
+// the repo to change — but keep font.size.monospace.x-western in step with it.
 user_pref("font.size.variable.x-western", 12);
 
 // All three slots, on purpose: this desktop renders its text in one family (the
-// i3 config in ~/.i3rc and ~/.alacritty/alacritty.toml name the same Courier
-// Prime), and a browser left on the distro serif / sans-serif was the last
+// i3 config in ~/.i3rc and ~/.alacritty/alacritty.toml name the same Cascadia
+// Code), and a browser left on the distro serif / sans-serif was the last
 // thing on screen showing a different face. Yes, that means an ordinary page
 // with no font stack of its own comes out fixed-width — that is the intent.
 // Drop the two lines below to get the stock proportional defaults back for page
 // text while keeping <code>/<pre> monospace.
 //
-// Courier Prime, not the Courier New this started as, and the browser is where
-// that choice is easiest to justify: a Courier reads thin on screen, and the
-// alternative fix was to promote Courier New's Bold to the everyday face.
-// Courier New has nothing above Bold, so every <strong>, <b> and heading on the
-// web would then have looked exactly like body text. Courier Prime is the
-// heavier design instead, and keeps a real Bold for the emphasis.
+// Cascadia Code, and the browser is where that choice is easiest to justify:
+// the web leans on bold for emphasis, so the everyday face needs a real Bold
+// sitting above the regular — a family whose heaviest face IS the everyday one
+// would flatten every <strong>, <b> and heading into body text. Cascadia ships
+// four real faces (Regular, Bold, Italic, Bold Italic), so it keeps that apart.
 //
-// 50-fonts-cursor.sh installs it from upstream's own TTFs (NOT apt's
-// fonts-courier-prime — that build labels all four faces style=Light, which
+// 50-fonts-cursor.sh installs it from upstream's own release, taking the four
+// static TTFs (NOT the variable build — that one reports no style=Bold, which
 // costs you the real bold this whole choice was about). That script also
 // exempts the family from its own fontconfig rule, which otherwise prepends
 // JetBrainsMono *strong* in front of every pattern on the machine and would
@@ -78,9 +76,9 @@ user_pref("font.size.variable.x-western", 12);
 // that wants icons ships its own icon font in its own stack, and that stack
 // still wins here (see the note below); these prefs only decide what the *text*
 // of an unstyled page lands on.
-user_pref("font.name.serif.x-western", "Courier Prime");
-user_pref("font.name.sans-serif.x-western", "Courier Prime");
-user_pref("font.name.monospace.x-western", "Courier Prime");
+user_pref("font.name.serif.x-western", "Cascadia Code");
+user_pref("font.name.sans-serif.x-western", "Cascadia Code");
+user_pref("font.name.monospace.x-western", "Cascadia Code");
 // Which of the two above a page with no font-family of its own lands on.
 user_pref("font.default.x-western", "sans-serif");
 // 13, Firefox's own default. Only <pre>/<code> and pages that ask for monospace
