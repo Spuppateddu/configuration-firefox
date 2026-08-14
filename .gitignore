@@ -7,3 +7,7 @@
 # Backups install.sh leaves next to what it replaced, if it was ever run in-tree
 *.backup
 *.backup.*
+
+# This machine's font sizes, written by best-linux-environment's fonts.local.
+user.local.js
+chrome/userChrome.local.css

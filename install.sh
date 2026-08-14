@@ -468,7 +468,13 @@ copy_file() {
     write_user "$PROFILE/$rel" < "$src"
 }
 
-copy_file user.js
+# user.js and this machine's user.local.js land as ONE file, in that order:
+# Firefox reads it top down and the last user_pref wins, so the local one does.
+if [[ -f "$REPO/user.js" ]]; then
+    { cat "$REPO/user.js"
+      [[ -f "$REPO/user.local.js" ]] && cat "$REPO/user.local.js"
+      :; } | write_user "$PROFILE/user.js"
+fi
 
 # File by file, never a directory-level diff: that would also see a
 # userContent.css of your own, never come back equal, and recopy on every boot.

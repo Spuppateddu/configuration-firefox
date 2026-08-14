@@ -1,3 +1,8 @@
+/* This machine's chrome font size, git-ignored and written from
+ * best-linux-environment's fonts.local. First, because CSS takes its imports
+ * before any rule; absent, the 12px default further down stands. */
+@import url("userChrome.local.css");
+
 /* Chromeless Firefox — no browser UI, toggled with a key, without fullscreen.
  *
  * Derived from autohide_toolbox.css
@@ -67,9 +72,12 @@
  *
  * Keep in step with font.size.variable.x-western in user.js. Note this is the
  * base --tab-label-height above resolves its 1.7em against, so it must stay
- * comfortably below --tab-min-height (26px); at 12px that em lands on 20.4px. */
+ * comfortably below --tab-min-height (26px); at 12px that em lands on 20.4px.
+ *
+ * The variable is this machine's override (userChrome.local.css, imported at the
+ * top); 12px is the size every machine gets when it sets none. */
 :root{
-  font-size: 12px !important;
+  font-size: var(--ble-ui-font-size, 12px) !important;
 }
 
 :root[sizemode="maximized"]{
