@@ -28,7 +28,7 @@ up front with all its others, so the installer doesn't have to.
 | `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back, hovering the top edge peeks |
 | `extensions.conf` | the add-on catalogue, as `id\|amo-slug\|label\|default` |
 | `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS |
-| `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings, installed into `/usr/lib/firefox` |
+| `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings and the tab list in the window title, installed into `/usr/lib/firefox` |
 
 ## Installing
 
@@ -259,6 +259,61 @@ To take Ctrl+d back, drop the `ble_key_duplicateTab` row and the `FREED_KEYS`
 entry in `firefox.cfg`. Vimium's side is handled too: its default `<c-d>` is a
 half-page scroll, so `vimium-settings.json` carries `unmap <c-d>` and nothing
 else.
+
+## The tab list in the window title
+
+**The window title is the tab bar.** The chrome is hidden, so the only thing
+permanently on screen showing what is open is the i3 title bar — and Firefox puts
+just the current page in it. `firefox.cfg` rewrites that line to the whole list:
+
+```
+7 │ 1 GDR Companion · G… │ 2 GitHub — pull… │ [3 Gmail] │ 4 Jira bo… │ …
+↑                         ↑                   ↑
+how many tabs are open    cropped tab name    the tab you are looking at
+```
+
+**The numbers are the ones Super+1…9 press.** Both this and Firefox's
+`selectTabAtIndex()` walk `gBrowser.visibleTabs`, so what you read is what you
+press — a tab hidden inside a collapsed group is in neither list and misnumbers
+nothing. `Super+9` stays "the last tab", which is only tab 9 when nine are open.
+
+**Names share a budget.** With a few tabs each gets `ble.title.tabChars`; with
+many they shrink towards a 4-character floor and the line is cut at
+`ble.title.maxChars`. The count on the left never lies, so a title too long to
+show everything still tells you how much is off the end. The separator is `│`
+rather than `·` or `-` on purpose: page titles are full of those, and a separator
+that turns up inside a name stops separating anything.
+
+| Pref (`about:config`) | |
+| --- | --- |
+| `ble.title.enabled` | `false` hands the title back to Firefox, live — the "off" path calls Firefox's own builder, so no restart |
+| `ble.title.tabChars` | longest a single tab name may get — default `24` |
+| `ble.title.maxChars` | hard cap on the whole line — default `220`, about one 1920px-wide i3 title bar in Cascadia Code NF 10 |
+| `ble.title.showIndex` | `false` drops the `1 `, `2 ` prefixes and gives the names those characters back |
+
+All four are read per render, so an `about:config` edit lands on the next tab
+event — switch tabs and you see it.
+
+**How the title is taken over.** `tabbrowser.js` has exactly one funnel for it:
+`updateTitlebar()`, which does
+`document.title = this.getWindowTitleForBrowser(this.selectedBrowser)`. It is a
+plain prototype method, so assigning to `gBrowser.updateTitlebar` on the instance
+shadows it and every one of Firefox's own call sites — page title changed, tab
+switched, window restored — builds our line instead. The original stays reachable
+underneath, which is what makes the `enabled` pref work without a restart.
+
+Firefox only calls it when the **selected** tab's title moves, so listeners on
+the tab container cover the rest: a background tab finishing its load, a tab
+opening, closing, moving, being pinned or hidden by a group. Renders are coalesced
+into one `setTimeout(0)` per window, which is not only tidiness — `TabClose` fires
+*before* the tab leaves `gBrowser.tabs`, so counting synchronously there reports
+one tab too many. Private windows keep a `Private ` prefix, the one part of
+Firefox's own title worth not losing.
+
+`ble.title.windowsPatched` in `about:config` counts the windows taken over and
+`ble.title.lastError` holds anything the block threw — the same pair as
+`ble.keys.*`. The two features sit in separate `try`/`catch` blocks in
+`firefox.cfg`, so a throw in one still leaves the other installed.
 
 ## What is left alone
 

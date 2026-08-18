@@ -44,21 +44,21 @@ user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 // ── Fonts ────────────────────────────────────────────────────────────────────
 // The size of ordinary page text: font.default.x-western below is sans-serif,
 // so this — not font.size.monospace — is what an unstyled page lands on.
-// Cascadia Code's x-height is 0.518em against JetBrainsMono's 0.550em, so it
-// reads close to nominal; drop to 11 if it now reads too big. Nothing downstream
+// Cascadia Code NF has a 0.518em x-height, so 12 reads close to nominal; drop to
+// 11 if it now reads too big. Nothing downstream
 // depends on this number, unlike the desktop sizes, so it is the cheapest one in
 // the repo to change — but keep font.size.monospace.x-western in step with it.
 user_pref("font.size.variable.x-western", 12);
 
 // All three slots, on purpose: this desktop renders its text in one family (the
 // i3 config in ~/.i3rc and ~/.alacritty/alacritty.toml name the same Cascadia
-// Code), and a browser left on the distro serif / sans-serif was the last
+// Code NF), and a browser left on the distro serif / sans-serif was the last
 // thing on screen showing a different face. Yes, that means an ordinary page
 // with no font stack of its own comes out fixed-width — that is the intent.
 // Drop the two lines below to get the stock proportional defaults back for page
 // text while keeping <code>/<pre> monospace.
 //
-// Cascadia Code, and the browser is where that choice is easiest to justify:
+// Cascadia Code NF, and the browser is where that choice is easiest to justify:
 // the web leans on bold for emphasis, so the everyday face needs a real Bold
 // sitting above the regular — a family whose heaviest face IS the everyday one
 // would flatten every <strong>, <b> and heading into body text. Cascadia ships
@@ -66,19 +66,16 @@ user_pref("font.size.variable.x-western", 12);
 //
 // 50-fonts-cursor.sh installs it from upstream's own release, taking the four
 // static TTFs (NOT the variable build — that one reports no style=Bold, which
-// costs you the real bold this whole choice was about). That script also
-// exempts the family from its own fontconfig rule, which otherwise prepends
-// JetBrainsMono *strong* in front of every pattern on the machine and would
-// leave these three prefs looking like they had never been set.
+// costs you the real bold this whole choice was about). NF is Microsoft's own
+// Nerd-Font build: the same face plus the icon range, so the whole machine needs
+// exactly one family and nothing sits behind these prefs.
 //
-// One name each, no Nerd Font behind them — unlike the i3 configs, which carry
-// JetBrainsMono as a second family for their Material Design glyphs. A page
-// that wants icons ships its own icon font in its own stack, and that stack
-// still wins here (see the note below); these prefs only decide what the *text*
-// of an unstyled page lands on.
-user_pref("font.name.serif.x-western", "Cascadia Code");
-user_pref("font.name.sans-serif.x-western", "Cascadia Code");
-user_pref("font.name.monospace.x-western", "Cascadia Code");
+// A page that wants icons ships its own icon font in its own stack, and that
+// stack still wins here (see the note below); these prefs only decide what the
+// *text* of an unstyled page lands on.
+user_pref("font.name.serif.x-western", "Cascadia Code NF");
+user_pref("font.name.sans-serif.x-western", "Cascadia Code NF");
+user_pref("font.name.monospace.x-western", "Cascadia Code NF");
 // Which of the two above a page with no font-family of its own lands on.
 user_pref("font.default.x-western", "sans-serif");
 // 13, Firefox's own default. Only <pre>/<code> and pages that ask for monospace
