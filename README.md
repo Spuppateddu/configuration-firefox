@@ -25,7 +25,7 @@ up front with all its others, so the installer doesn't have to.
 | --- | --- |
 | `install.sh` | applies everything below; safe to re-run, and it is re-run at every boot |
 | `user.js` | curated prefs — toolbar layout, Gruvbox theme, blank new tab, no autofill/password manager, no speculative prefetch |
-| `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back, hovering the top edge peeks |
+| `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back |
 | `extensions.conf` | the add-on catalogue, as `id\|amo-slug\|label\|default` |
 | `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS |
 | `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings and the tab list in the window title, installed into `/usr/lib/firefox` |
@@ -136,22 +136,6 @@ bar stays put. `Ctrl+L` still reveals the toolbar for as long as the urlbar hold
 focus. `user.js` pins the pref to `never`, so each launch starts chromeless and
 the toggle lasts for the session.
 
-### Hovering the top edge
-
-**Resting the cursor on the top few pixels of the window unfolds the header**,
-and moving off folds it away again. Folded, the toolbox is still there — the
-rotation only tips it away — so it keeps a hit area the height of its own
-projection, and that band is the trigger. The band is the header height times
-`cos(--uc-toolbox-rotation)`: about 8px at the default `82deg`, but only ~1.5px
-in the `88.5deg` maximized case, so lower that value if the edge feels
-unreachable when maximized.
-
-`--uc-hover-delay` (150ms) is the intent filter: a cursor merely crossing the top
-of the page leaves before the delay elapses and nothing appears. Unlike the peek
-below, a hovered header is **clickable** — you hover it to reach a button — and
-it overlays the page rather than pushing it down. Both live in `userChrome.css`;
-deleting its hover section restores a chrome that hover cannot reveal at all.
-
 ## Tab keys, bound at the browser level
 
 | Chord | Does |
@@ -166,49 +150,6 @@ Horizontal moves between tabs, vertical moves through history, so `h/j/k/l` is
 the whole navigation set on one hand. This replaces `Ctrl+Tab` /
 `Ctrl+Shift+Tab`, which are awkward to reach. The jump and duplicate bindings
 used to be Vimium mappings and moved here.
-
-### The peek
-
-With the chrome hidden a tab switch was invisible — the page changed and nothing
-said which tab you had landed on. So every navigation key above **flashes the
-header for one second** and folds it away again. **Closing a tab** does the same,
-for the same reason: it drops you on a neighbouring tab unannounced.
-
-`firefox.cfg` sets `ble-peek` on the window's root element and a timer removes
-it; all the appearance is in `userChrome.css`, which already knows how to unfold
-the toolbox for `Ctrl+L`. Pressing another key restarts the timer instead of
-stacking a second one, so holding `Super+l` down leaves the header up for a
-second after the *last* press.
-
-| Pref (`about:config`) | |
-| --- | --- |
-| `ble.keys.peekMs` | the duration in ms — default `1000`, `0` turns the peek off and keeps the keys. Read per press, so a change applies to the very next keystroke. |
-
-The peek is click-through: the toolbox is overlaying the page for that second, so
-a click aimed at a link near the top of the page still reaches the page rather
-than landing on a tab. Pinned open with `Ctrl+Shift+B` the toolbar is in flow and
-stays clickable — the rule excludes that state.
-
-Back and forward are matched by **command** id rather than key id, which is what
-makes a `Super+j` at the very start of the history flash nothing: `Browser:Back`
-is disabled there, a `<key>` naming a disabled command never fires, so there is
-nothing to announce. The trade is that the same commands reached another way
-(`Alt+Left`, the back button) peek too — which is the behaviour you want anyway.
-Duplicating a tab deliberately does not peek: it lands you on a copy of the page
-you were already looking at. Add `Browser:DuplicateTab` to `PEEK_COMMANDS` in
-`firefox.cfg` if you disagree.
-
-Closing a tab is hooked differently again — on the **`TabClose` event**, not on a
-command id. Firefox spreads tab closing over several commands (`cmd_close` for
-`Ctrl+w`, `cmd_closeWindow`, one per tab-context-menu entry) and the mouse routes
-through none of them, whereas every close of every kind dispatches `TabClose` on
-the tab, which bubbles to the document. So `Ctrl+w`, `Ctrl+F4`, middle-clicking a
-tab, the tab's X, *Close Tab* / *Close Other Tabs* / *Close Tabs to the Right* in
-the context menu and Vimium's `x` all peek, from one listener. Batch closes fire
-one event per tab and the timer restarts rather than stacks, so they are a single
-flash. Dragging a tab out into its own window is excluded (`detail.adoptedBy` is
-set — you are looking at the new window, not this one). For the keys only, put
-`cmd_close` in `PEEK_COMMANDS` and drop the `TabClose` listener.
 
 `Browser:Back` and `Browser:Forward` ship `disabled="true"` and Firefox flips
 that as the session history changes; a `<key>` naming a disabled command doesn't

@@ -27,8 +27,7 @@
  *
  * Ctrl+L still works while the chrome is hidden: focusing the urlbar reveals
  * the toolbar for as long as it holds focus (see the :focus-within rules), then
- * it folds away again. Resting the cursor on the very top edge reveals it too —
- * see the hover section near the bottom.
+ * it folds away again.
  *
  * user.js pins browser.toolbars.bookmarks.visibility to "never", so every
  * launch starts chromeless; the toggle lasts for the session.
@@ -36,7 +35,6 @@
 
 :root{
   --uc-toolbox-rotation: 82deg;  /* how far the toolbox folds away when hidden */
-  --uc-hover-delay: 150ms;       /* rest this long on the top edge to unfold */
 }
 
 /* ── Density: make the chrome short when it IS shown ───────────────────────
@@ -141,8 +139,7 @@
 
 /* ── Peek: Ctrl+L, customize mode, and modal/panel states ──────────────────
  * Anything that focuses the urlbar (Ctrl+L, Vimium's `o`, a keyword search)
- * or opens a panel anchored in the chrome reveals the toolbar while it lasts.
- * :hover is intentionally absent from every selector here. */
+ * or opens a panel anchored in the chrome reveals the toolbar while it lasts. */
 :root:is([window-modal-open],[customizing]) toolbar #searchbar-new[popover],
 :root:is([window-modal-open],[customizing]) #urlbar[popover],
 #mainPopupSet:has(> [panelopen]:not(#ask-chat-shortcuts,#selection-shortcut-action-panel,#chat-shortcuts-options-panel,#tab-preview-panel), > #tab-group-editor > [panelopen]) ~ toolbox :is(.urlbar,#urlbar[popover]),
@@ -166,53 +163,6 @@
 }
 
 #navigator-toolbox > *{ line-height: normal; pointer-events: auto }
-
-/* ── Peek: hovering the top edge ───────────────────────────────────────────
- * The folded toolbox still takes hit area — height × cos(rotation), ~8px at
- * 82deg, ~1.5px maximized. The delay filters out a cursor merely passing by. */
-#navigator-toolbox:hover{
-  transition-delay: var(--uc-hover-delay);
-  transform: rotateX(0);
-  opacity: 1;
-}
-
-/* The urlbar is a popover since Firefox 133 and folds separately — without this
- * the header appears with a hole where the address bar belongs. */
-:root:has(#navigator-toolbox:hover) toolbar #searchbar-new[popover],
-:root:has(#navigator-toolbox:hover) #urlbar[popover]{
-  pointer-events: auto;
-  opacity: 1;
-  transition-delay: var(--uc-hover-delay);
-  transform: rotateX(0deg);
-}
-
-/* ── Peek: the navigation keys, for a second ───────────────────────────────
- * firefox.cfg sets `ble-peek` on the root element when Super+h/l, Super+j/k or
- * Super+1..9 fire, and whenever a tab closes. Overlays rather than
- * position:relative, so the page doesn't jump under you and back a second
- * later. */
-:root[ble-peek] #navigator-toolbox{
-  transition-delay: 0ms !important;
-  transform: rotateX(0) !important;
-  opacity: 1 !important;
-}
-
-/* The urlbar is a popover since Firefox 133 and folds separately — without this
- * the header appears with a hole where the address bar belongs. */
-:root[ble-peek] toolbar #searchbar-new[popover],
-:root[ble-peek] #urlbar[popover]{
-  opacity: 1;
-  transition-delay: 0ms;
-  transform: rotateX(0deg);
-}
-
-/* Click-through: it overlays the page, and the rule above gives every child
- * pointer-events:auto. Skipped when pinned (Ctrl+Shift+B) — that one is in flow
- * and must stay clickable. */
-:root[ble-peek]:not(:has(#PersonalToolbar:not([collapsed]), #PersonalToolbar[collapsed="false"])) #navigator-toolbox,
-:root[ble-peek]:not(:has(#PersonalToolbar:not([collapsed]), #PersonalToolbar[collapsed="false"])) #navigator-toolbox > *{
-  pointer-events: none !important;
-}
 
 /* Don't apply the transform before the window has been fully created. */
 :root:not([sessionrestored]) #navigator-toolbox{ transform:none !important }
