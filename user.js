@@ -86,6 +86,11 @@ user_pref("font.size.monospace.x-western", 13);
 // mean browser.display.use_document_fonts=0, which is NOT set here — it also
 // kills icon fonts, so half the web loses its glyphs.
 
+// ── Zoom ─────────────────────────────────────────────────────────────────────
+// One zoom for the whole web, not one per site: a blank new tab has no host, so
+// it used to inherit the zoom of whatever tab opened it. 0.9 is the default.
+user_pref("browser.zoom.siteSpecific", false);
+
 // ── New tab / startup ────────────────────────────────────────────────────────
 // A blank new tab: no Firefox Home feed, no top sites, no sponsored anything.
 user_pref("browser.startup.homepage", "chrome://browser/content/blanktab.html");
