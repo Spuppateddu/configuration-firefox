@@ -100,6 +100,10 @@ user_pref("browser.newtabpage.activity-stream.showSearch", false);
 user_pref("browser.newtabpage.activity-stream.showSponsoredCheckboxes", false);
 user_pref("browser.newtabpage.activity-stream.showSponsoredTopSites", false);
 
+// The "Restore session" page — the crash path, not the settings checkbox: a
+// reboot SIGKILLs Firefox, so every reboot looks like a crash. false = no ask.
+user_pref("browser.sessionstore.resume_from_crash", false);
+
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 user_pref("browser.tabs.groups.smart.userEnabled", false);   // no AI tab grouping
 user_pref("browser.tabs.hoverPreview.showThumbnails", false);
