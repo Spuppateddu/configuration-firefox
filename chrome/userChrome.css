@@ -140,6 +140,22 @@
   transition: none !important;
 }
 
+/* The urlbar is a popover since Firefox 133, so it does NOT ride along with
+ * #navigator-toolbox: the fold rule above tips it away on its own, for as long
+ * as the session is restored — i.e. always. The block right above therefore
+ * brings the toolbar back with a *hole* where the address should be, and the
+ * only thing that filled it was focus (Ctrl+L). Pinned-shown has to un-fold the
+ * popover explicitly, which is what this does. */
+:root:has(#PersonalToolbar:not([collapsed])) #urlbar[popover],
+:root:has(#PersonalToolbar:not([collapsed])) toolbar #searchbar-new[popover],
+:root:has(#PersonalToolbar[collapsed="false"]) #urlbar[popover],
+:root:has(#PersonalToolbar[collapsed="false"]) toolbar #searchbar-new[popover]{
+  pointer-events: auto;
+  opacity: 1;
+  transform: rotateX(0deg);
+  transition: none;
+}
+
 /* ── Peek: Ctrl+L, customize mode, and modal/panel states ──────────────────
  * Anything that focuses the urlbar (Ctrl+L, Vimium's `o`, a keyword search)
  * or opens a panel anchored in the chrome reveals the toolbar while it lasts. */

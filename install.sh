@@ -608,7 +608,7 @@ else
     # there yet shows a "Failed to read the configuration file" modal.
     if write_root "$FF_DIR/firefox.cfg" 0644 < "$AUTOCONFIG/firefox.cfg" \
        && write_root "$FF_DIR/defaults/pref/autoconfig.js" 0644 < "$AUTOCONFIG/autoconfig.js"; then
-        ok "Key bindings ready — Super+h/l tabs, Super+j/k history, Super+1..9 jump, Ctrl+d duplicates."
+        ok "Key bindings ready — Super+j/k tabs, Super+h/l history, Super+1..9 jump, Ctrl+d duplicates."
         skip "They take effect at the next Firefox start. Errors, if any, land in Ctrl+Shift+J."
     else
         warn "Key bindings not installed — the rest of the config still is."

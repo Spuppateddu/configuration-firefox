@@ -32,6 +32,15 @@ user_pref("sidebar.visibility", "hide-sidebar");
 user_pref("browser.uidensity", 1);
 user_pref("sidebar.revamp.defaultLauncherVisible", false);
 
+// ── The address bar shows the WHOLE address ──────────────────────────────────
+// Firefox trims what it thinks you don't need: the "https://" scheme and a bare
+// trailing slash, so https://example.com/ reads as example.com. The full address
+// is still what you get when you click in and when you copy — this only changes
+// what is *drawn* while the bar is idle. false = draw all of it, scheme
+// included, which is the point of having the bar on screen at all: you can see
+// at a glance whether you are on http or https, and on which exact path.
+user_pref("browser.urlbar.trimURLs", false);
+
 // ── Theme ────────────────────────────────────────────────────────────────────
 // Gruvbox is a static theme from AMO, installed by policy (extensions.conf).
 // Naming its ID here makes it the active theme instead of the built-in default.

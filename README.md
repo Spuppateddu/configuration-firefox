@@ -147,20 +147,20 @@ switch tabs.
 
 | Chord | Does |
 | --- | --- |
-| **Super+l** / **Super+h** | next / previous tab, wrapping at the ends |
-| **Super+k** / **Super+j** | forward / back in this tab's history |
+| **Super+k** / **Super+j** | next / previous tab, wrapping at the ends |
+| **Super+h** / **Super+l** | back / forward in this tab's history |
 | **Super+1** … **Super+8** | jump to tab 1..8 |
 | **Super+9** | jump to the last tab |
 | **Ctrl+d** | duplicate the current tab |
 
-Horizontal moves between tabs, vertical moves through history, so `h/j/k/l` is
+Vertical moves between tabs, horizontal moves through history, so `h/j/k/l` is
 the whole navigation set on one hand. This replaces `Ctrl+Tab` /
 `Ctrl+Shift+Tab`, which are awkward to reach. The jump and duplicate bindings
 used to be Vimium mappings and moved here.
 
 `Browser:Back` and `Browser:Forward` ship `disabled="true"` and Firefox flips
 that as the session history changes; a `<key>` naming a disabled command doesn't
-fire, so Super+j/k correctly do nothing at either end of the history.
+fire, so Super+h/l correctly do nothing at either end of the history.
 
 **Super, because i3 owns Alt.** `~/.i3rc/config` sets `$mod` to `Mod1` = Alt, so
 Alt+h/j/k/l (focus) and Alt+1..9 (workspaces) are grabbed at the X level and
