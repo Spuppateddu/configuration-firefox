@@ -19,9 +19,12 @@
 user_pref("browser.uiCustomization.state", "{\"placements\":{\"widget-overflow-fixed-list\":[],\"unified-extensions-area\":[\"ublock0_raymondhill_net-browser-action\"],\"nav-bar\":[\"back-button\",\"forward-button\",\"stop-reload-button\",\"customizableui-special-spring1\",\"vertical-spacer\",\"urlbar-container\",\"customizableui-special-spring2\",\"downloads-button\",\"unified-extensions-button\",\"_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action\",\"wappalyzer_crunchlabz_com-browser-action\",\"_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action\"],\"toolbar-menubar\":[\"menubar-items\"],\"TabsToolbar\":[\"firefox-view-button\",\"tabbrowser-tabs\",\"new-tab-button\",\"alltabs-button\"],\"vertical-tabs\":[],\"PersonalToolbar\":[\"personal-bookmarks\"]},\"seen\":[\"developer-button\",\"screenshot-button\",\"ipprotection-button\",\"ublock0_raymondhill_net-browser-action\",\"_446900e4-71c2-419f-a6a7-df9c091e268b_-browser-action\",\"wappalyzer_crunchlabz_com-browser-action\",\"_d7742d87-e61d-4b78-b8a1-b469842139fa_-browser-action\"],\"dirtyAreaCache\":[\"nav-bar\",\"vertical-tabs\",\"PersonalToolbar\",\"toolbar-menubar\",\"TabsToolbar\",\"unified-extensions-area\"],\"currentVersion\":23,\"newElementCount\":2}");
 // Doubles as the chrome toggle: chrome/userChrome.css reads #PersonalToolbar's
 // collapsed state to decide whether the whole toolbar area is shown, and
-// Ctrl+Shift+B is what flips it. Pinned to "never" here so every launch starts
-// chromeless — the toggle then lasts for the session.
-user_pref("browser.toolbars.bookmarks.visibility", "never");
+// Ctrl+Shift+B is what flips it. Pinned to "always" here so every launch starts
+// with the toolbar shown — Ctrl+Shift+B still folds it away, for that session
+// only. Set this back to "never" to start chromeless again. Do NOT use
+// "newtab": that flips the bit per tab, so the whole chrome would come and go
+// as you switch tabs.
+user_pref("browser.toolbars.bookmarks.visibility", "always");
 user_pref("sidebar.visibility", "hide-sidebar");
 // Firefox's built-in "Compact" density (0 = normal, 1 = compact, 2 = touch).
 // Customize Toolbar only offers it once you've used it, but the pref always
@@ -38,7 +41,8 @@ user_pref("layout.css.prefers-color-scheme.content-override", 0); // 0 = tell pa
 
 // ── Custom userChrome.css ────────────────────────────────────────────────────
 // Required for Firefox to load chrome/userChrome.css at startup — that is what
-// hides the whole toolbar area until you toggle it back with Ctrl+Shift+B.
+// folds the whole toolbar area away on Ctrl+Shift+B (and what keeps it shown
+// the rest of the time, per the visibility pref above).
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 
 // ── Fonts ────────────────────────────────────────────────────────────────────

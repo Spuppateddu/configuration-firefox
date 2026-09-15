@@ -468,11 +468,15 @@ copy_file() {
     write_user "$PROFILE/$rel" < "$src"
 }
 
-# user.js and this machine's user.local.js land as ONE file, in that order:
-# Firefox reads it top down and the last user_pref wins, so the local one does.
+# user.js and this machine's two local files land as ONE file, in that order:
+# Firefox reads it top down and the last user_pref wins, so the local ones do.
+#
+# Both are written by best-linux-environment and git-ignored here: user.local.js
+# from its fonts.local (the sizes), user.settings.local.js from settings.local.
 if [[ -f "$REPO/user.js" ]]; then
     { cat "$REPO/user.js"
       [[ -f "$REPO/user.local.js" ]] && cat "$REPO/user.local.js"
+      [[ -f "$REPO/user.settings.local.js" ]] && cat "$REPO/user.settings.local.js"
       :; } | write_user "$PROFILE/user.js"
 fi
 

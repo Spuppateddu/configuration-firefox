@@ -25,7 +25,7 @@ up front with all its others, so the installer doesn't have to.
 | --- | --- |
 | `install.sh` | applies everything below; safe to re-run, and it is re-run at every boot |
 | `user.js` | curated prefs — toolbar layout, Gruvbox theme, blank new tab, no autofill/password manager, no speculative prefetch |
-| `chrome/userChrome.css` | hides the whole browser UI; **Ctrl+Shift+B** toggles it back |
+| `chrome/userChrome.css` | folds the whole browser UI away on **Ctrl+Shift+B**; it starts shown |
 | `extensions.conf` | the add-on catalogue, as `id\|amo-slug\|label\|default` |
 | `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS |
 | `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings and the tab list in the window title, installed into `/usr/lib/firefox` |
@@ -120,9 +120,9 @@ blob per extension in `storage-sync-v2.sqlite`; `install.sh` writes that row
 directly (creating the database if this is a brand-new profile). It only does so
 while Firefox is **closed** — it holds that database open.
 
-## The chromeless UI
+## The foldable UI
 
-**The browser UI is hidden, and `Ctrl+Shift+B` toggles it.** Firefox ships no
+**The browser UI is shown, and `Ctrl+Shift+B` folds it away.** Firefox ships no
 pref and no key for "hide the toolbar", and binding a custom hotkey to one needs
 a `userChrome.js` loader in Firefox's *application* directory — which was
 read-only squashfs back when this was a snap. So `userChrome.css` borrows a
@@ -133,8 +133,15 @@ purely as a state bit, and the whole `#navigator-toolbox` is driven from it.
 
 Unlike `F11` this leaves the window alone, so i3 keeps tiling it and the status
 bar stays put. `Ctrl+L` still reveals the toolbar for as long as the urlbar holds
-focus. `user.js` pins the pref to `never`, so each launch starts chromeless and
-the toggle lasts for the session.
+focus. When shown, the toolbar sits *in flow*: it pushes the page down rather
+than covering it, so it is a real permanent bar, not a peek.
+
+`user.js` pins the pref to `always`, so **each launch starts with the toolbar
+shown and it stays there**; `Ctrl+Shift+B` folds it away for that session only.
+Set the pref back to `never` to go back to starting chromeless — the CSS is the
+same either way, the pref just picks the starting state. Don't use `newtab`:
+that flips the bit per tab, so the whole chrome would appear and vanish as you
+switch tabs.
 
 ## Tab keys, bound at the browser level
 
@@ -273,3 +280,11 @@ default once in Settings › Search.
 outright — **managed**, not seeded — so they are re-applied on every run and take
 effect at the next restart. To refresh the payload from a machine you've
 customised, copy those files back out of your profile into this repo.
+
+Two git-ignored files sit beside them, written per machine by
+[best-linux-environment](https://github.com/Spuppateddu/best-linux-environment)
+and appended to `user.js` in this order, so their prefs win: `user.local.js`
+(the font sizes, from its `fonts.local`) and `user.settings.local.js` (the
+choices, from its `settings.local` — today `browser.tabs.inTitlebar`, i.e.
+whether Firefox draws a title bar of its own). Neither exists when you run this
+repo on its own, and nothing here needs them.

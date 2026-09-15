@@ -11,3 +11,6 @@
 # This machine's font sizes, written by best-linux-environment's fonts.local.
 user.local.js
 chrome/userChrome.local.css
+
+# ...and its prefs, written from that repo's settings.local.
+user.settings.local.js

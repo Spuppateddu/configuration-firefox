@@ -3,7 +3,8 @@
  * before any rule; absent, the 12px default further down stands. */
 @import url("userChrome.local.css");
 
-/* Chromeless Firefox — no browser UI, toggled with a key, without fullscreen.
+/* Foldable Firefox chrome — the browser UI hides on a key, without fullscreen.
+ * user.js decides which way it starts; right now it starts shown.
  *
  * Derived from autohide_toolbox.css
  * (https://github.com/MrOtherGuy/firefox-csshacks/tree/master/chrome), made
@@ -29,8 +30,10 @@
  * the toolbar for as long as it holds focus (see the :focus-within rules), then
  * it folds away again.
  *
- * user.js pins browser.toolbars.bookmarks.visibility to "never", so every
- * launch starts chromeless; the toggle lasts for the session.
+ * user.js pins browser.toolbars.bookmarks.visibility to "always", so every
+ * launch starts with the toolbar *shown* and it stays put — Ctrl+Shift+B folds
+ * it away for that session only. Flip the pref back to "never" to start
+ * chromeless again; every rule below works the same either way.
  */
 
 :root{
@@ -90,7 +93,7 @@
  * sight in both states — we only ever read it in the selectors below. */
 #PersonalToolbar{ display: none !important; }
 
-/* ── Hidden (the default) ──────────────────────────────────────────────────
+/* ── Hidden (folded away) ──────────────────────────────────────────────────
  * position:fixed takes the toolbox out of flow so page content fills the whole
  * window; the rotation + opacity fold it away. Deliberately not display:none,
  * which would break urlbar focus and panel anchoring. */
