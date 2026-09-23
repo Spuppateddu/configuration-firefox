@@ -47,16 +47,22 @@
  * urlbar 32px → 26px and toolbar-button padding 8px → 6px (values from
  * Firefox 149's tabbrowser/tabs.css, urlbar-variables.css, toolbarbuttons.css).
  *
- * These four go tighter still, and are the numbers to tune. --tab-label-height
+ * These go tighter still, and are the numbers to tune. --tab-label-height
  * sizes the label box inside a tab, so keep it just under --tab-min-height or
- * the text overflows the tab it sits in. */
+ * the text overflows the tab it sits in.
+ *
+ * The nav-bar ones (back/forward, urlbar, extensions) use Firefox 155's names:
+ * --urlbar-height (was --urlbar-min-height) and --toolbarbutton-padding-inner/
+ * -outer (were --toolbarbutton-inner/outer-padding). Firefox renamed them, so
+ * the old names silently did nothing. A button is 16px icon + 2×inner +
+ * 2×outer: 16 + 6 + 2 = 24px, down from compact's 16 + 12 + 4 = 32px. */
 :root{
   --tab-min-height: 26px !important;
   --tab-label-height: 1.7em !important;
   --tab-block-margin: 1px !important;
-  --urlbar-min-height: 26px !important;
-  --toolbarbutton-inner-padding: 3px !important;
-  --toolbarbutton-outer-padding: 1px !important;
+  --urlbar-height: 22px !important;
+  --toolbarbutton-padding-inner: 3px !important;
+  --toolbarbutton-padding-outer: 1px !important;
 }
 
 /* ── Chrome UI font size ───────────────────────────────────────────────────
