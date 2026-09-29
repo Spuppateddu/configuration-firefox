@@ -121,6 +121,11 @@ user_pref("browser.sessionstore.resume_from_crash", false);
 user_pref("browser.tabs.groups.smart.userEnabled", false);   // no AI tab grouping
 user_pref("browser.tabs.hoverPreview.showThumbnails", false);
 
+// ── Menu bar: no pop-up on a bare modifier tap ───────────────────────────────
+// Tapping Super (or Alt) alone showed it, so i3's Super+p play/pause did too.
+// Alt+F / Alt+E still open the menus.
+user_pref("ui.key.menuAccessKeyFocuses", false);
+
 // ── Tab unloading ────────────────────────────────────────────────────────────
 // Linux ships this false, so background tabs are NEVER dropped and a heavy web
 // app (Teams, Outlook) holds its GB until you close it. On = discard on low RAM.
