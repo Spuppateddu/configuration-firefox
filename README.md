@@ -79,6 +79,7 @@ visible at once, arrow keys to move, space to tick, `a` for all and `n` for none
    [x] Gruvbox — the browser theme user.js selects
    [ ] Bitwarden — password manager (needs your account)
    [ ] Wappalyzer — what a site is built with
+   [ ] Keepa — Amazon price history and alerts
 ```
 
 `install.sh` asks it itself, so a clone of this repo on its own is a complete
