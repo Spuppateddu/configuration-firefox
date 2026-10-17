@@ -415,11 +415,16 @@ fi
 resolve_profile() {
     local ini="$FF_ROOT/profiles.ini" rel=""
 
-    rel="$(awk -F= '
-        /^\[Install/      {ins=1; next}
-        /^\[/             {ins=0}
-        ins && $1=="Default" {print $2; exit}
-    ' "$ini")"
+    # MOZ_LEGACY_PROFILES=1 (set by 70-firefox.sh) makes Firefox skip [Install*]
+    # and open Default=1 — so must we, or every pref lands in a profile never used.
+    if [[ "${MOZ_LEGACY_PROFILES:-}" != 1 ]] \
+       && ! grep -qs '^export MOZ_LEGACY_PROFILES=1' "$HOME/.xsessionrc"; then
+        rel="$(awk -F= '
+            /^\[Install/      {ins=1; next}
+            /^\[/             {ins=0}
+            ins && $1=="Default" {print $2; exit}
+        ' "$ini")"
+    fi
 
     if [[ -z "$rel" ]]; then
         rel="$(awk -F= '
