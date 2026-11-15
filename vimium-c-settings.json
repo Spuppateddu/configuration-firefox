@@ -1,0 +1,4 @@
+{
+  "userDefinedCss": "/* Gruvbox, like vimium-settings.json. Vimium C's own names: .LH is one hint\n   marker, .MC a typed character in it, .HUD the bottom bar. */\n/* -------- HINTS -------- */\n.LH, .D>.LH, .HM>.LH {\n  background: #282828 !important;\n  border: 1px solid #DCDCCC !important;\n  border-radius: 0 !important;\n  box-shadow: none !important;\n  padding: 3px 4px;\n  color: #d8a657 !important;\n  font-family: \"Cascadia Code NF\", monospace;\n  font-size: 13px;\n  font-weight: normal;\n  text-shadow: none;\n}\n.LH > .MC { color: #d8a657 !important; opacity: 0.3; }\n.LH > .MC ~ span { color: #89b482 !important; }\n\n/* -------- HUD -------- */\n.HUD, .HUD.D { color: #d4be98 !important; font-family: \"Cascadia Code NF\", monospace; font-size: 13px; }\n.HUD:after, .HUD.D:after { background: #282828 !important; border: 1px solid #3c3836 !important; border-radius: 0 !important; }",
+  "vimSync": true
+}

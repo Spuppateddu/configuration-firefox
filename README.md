@@ -1,6 +1,6 @@
 # configuration-firefox
 
-My Firefox configuration: the look and feel, the add-ons, Vimium's key mappings,
+My Firefox configuration: the look and feel, the add-ons, Vimium C's (or Vimium's) settings,
 and browser-level key bindings. One idempotent `./install.sh` applies all of it.
 
 That is the **whole** scope — it is not a profile sync. Bookmarks, history,
@@ -24,17 +24,18 @@ up front with all its others, so the installer doesn't have to.
 | File | What it carries |
 | --- | --- |
 | `install.sh` | applies everything below; safe to re-run, and it is re-run at every boot |
-| `user.js` | curated prefs — toolbar layout, Gruvbox theme, blank new tab, no autofill/password manager, no speculative prefetch |
+| `user.js` | curated prefs — toolbar layout, Gruvbox theme, blank new tab, no autofill/password manager, Firefox's speculative connections kept on |
 | `chrome/userChrome.css` | folds the whole browser UI away on **Ctrl+Shift+B**; it starts shown |
 | `extensions.conf` | the add-on catalogue, as `id\|amo-slug\|label\|default` |
-| `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS |
+| `vimium-c-settings.json` | Vimium C's Gruvbox hint/HUD CSS — the default vim-keys add-on |
+| `vimium-settings.json` | Vimium's key mappings and its Gruvbox hint/vomnibar CSS — for a machine that picks Vimium instead |
 | `autoconfig/` | `firefox.cfg` + `autoconfig.js` — the tab key bindings and the tab list in the window title, installed into `/usr/lib/firefox` |
 
 ## Installing
 
 ```
 ./install.sh                    apply everything, asking which add-ons to install
-./install.sh --extensions=ublock-origin,vimium-ff
+./install.sh --extensions=ublock-origin,vimium-c
 ./install.sh --extensions=all   every add-on in extensions.conf
 ./install.sh --extensions=none  no add-on policy at all
 ./install.sh --dry-run          preview, change nothing (or DRY_RUN=true)
@@ -75,7 +76,8 @@ visible at once, arrow keys to move, space to tick, `a` for all and `n` for none
    ↑/↓ move · space toggle · a all · n none · enter confirm
 
  ❯ [x] uBlock Origin — content blocker
-   [x] Vimium — vim keys for the web
+   [x] Vimium C — vim keys for the web, much faster link hints than Vimium
+   [ ] Vimium — the original; pick it instead of Vimium C, not with it
    [x] Gruvbox — the browser theme user.js selects
    [ ] Bitwarden — password manager (needs your account)
    [ ] Wappalyzer — what a site is built with
@@ -100,8 +102,10 @@ unticked. An empty answer is a real answer — "none" — and is recorded as one
 
 Unticking one **never uninstalls it**. The policy stops declaring the add-on and
 Firefox leaves what is installed alone — remove it in `about:addons` if that is
-what you meant. Vimium is the one entry with a side effect: unticked, its
-settings row is not written either.
+what you meant. Two exceptions: Vimium and Vimium C, unticked, get no
+settings row written; and **ticking Vimium C without Vimium uninstalls Vimium**
+(the policy's `Extensions.Uninstall`), because the two would fight over every
+key. Tick Vimium again (and untick Vimium C) to get it back.
 
 Add a new add-on by appending a line to `extensions.conf` — its ID (from
 `about:debugging`), its addons.mozilla.org slug, a label, and `1`/`0` for whether
@@ -120,6 +124,18 @@ Vimium's options live in `chrome.storage.sync`, which Firefox keeps as one JSON
 blob per extension in `storage-sync-v2.sqlite`; `install.sh` writes that row
 directly (creating the database if this is a brand-new profile). It only does so
 while Firefox is **closed** — it holds that database open.
+
+**Vimium C is the default**, not Vimium: the same default keys, with much faster
+link hints (`f`/`F`) on Firefox, where Vimium measures every link on the page at
+each press. A machine that had picked Vimium is moved to Vimium C once, by
+`install.sh` itself (the marker `~/.cache/firefox-config/vimium-c-switched`
+stops it from undoing a later pick of Vimium). Its settings go through the same database, with
+one difference: Vimium C reads that row only on its **first install**, into an
+empty local store, and from then on keeps its own copy. So
+`vimium-c-settings.json` seeds a fresh install, and `install.sh` only sets the
+keys the file names, leaving the rest of Vimium C's row alone. Change it later
+in its own options page (or remove and reinstall it to re-read the file). It
+needs no `unmap <c-d>`: Vimium C does not bind `<c-d>`.
 
 ## The foldable UI
 

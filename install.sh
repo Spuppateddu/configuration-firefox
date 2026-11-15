@@ -355,6 +355,23 @@ selected() {
     return 1
 }
 
+# ── One-time switch: Vimium → Vimium C ──────────────────────────────────────
+# Vimium C replaced Vimium as the default (same keys, much faster link hints on
+# Firefox). A machine that had picked Vimium is moved over once, whatever the
+# selection came from; the marker stops this from undoing a later, deliberate
+# pick of Vimium. The policy below then uninstalls Vimium, so the two never
+# fight over the same keys.
+SWITCH_MARK="$STATE_DIR/vimium-c-switched"
+SWITCHED=false
+if [[ ! -f "$SWITCH_MARK" ]] && selected vimium-ff && ! selected vimium-c; then
+    for i in "${!SELECTED[@]}"; do [[ "${SELECTED[$i]}" == vimium-ff ]] && SELECTED[$i]=vimium-c; done
+    SWITCHED=true
+    step "Add-ons: Vimium → Vimium C, the new default (much faster link hints). Vimium is uninstalled; pick it again to get it back."
+fi
+if [[ ! -f "$SWITCH_MARK" && "$DRY_RUN" != true ]]; then
+    mkdir -p "$STATE_DIR" && : > "$SWITCH_MARK"
+fi
+
 case "$selection_source" in
     asked)      step "Add-ons: ${#SELECTED[@]} selected — ${SELECTED[*]:-none}" ;;
     remembered) skip "Add-ons: ${#SELECTED[@]} selected — ${SELECTED[*]:-none} (your last choice; --extensions= to change)" ;;
@@ -364,11 +381,11 @@ esac
 # Only for an explicit --extensions=: recording the defaults would invent a
 # choice nobody made. Truncate-then-append, since `printf` on an empty array
 # still writes a blank line and "none" has to record as an empty file.
-if [[ "$selection_source" == asked && "$DRY_RUN" != true ]]; then
+if [[ ( "$selection_source" == asked || "$SWITCHED" == true ) && "$DRY_RUN" != true ]]; then
     mkdir -p "$STATE_DIR"
     : > "$STATE_FILE"
     for slug in ${SELECTED[@]+"${SELECTED[@]}"}; do printf '%s\n' "$slug" >> "$STATE_FILE"; done
-elif [[ "$selection_source" == asked ]]; then
+elif [[ "$selection_source" == asked || "$SWITCHED" == true ]]; then
     would remember "${SELECTED[*]:-none} → $(tilde "$STATE_FILE")"
 fi
 
@@ -389,7 +406,14 @@ build_policies() {
         printf '        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/%s/latest.xpi"\n' "${EXT_SLUG[$i]}"
         printf '      }'
     done
-    printf '\n    }\n  }\n}\n'
+    printf '\n    }'
+    # The one add-on this ever removes: Vimium, when Vimium C replaces it. Both
+    # running means two handlers for every key. Ticking Vimium again (and not
+    # Vimium C) drops this line, and the policy installs it back.
+    if selected vimium-c && ! selected vimium-ff; then
+        printf ',\n    "Extensions": {\n      "Uninstall": ["{d7742d87-e61d-4b78-b8a1-b469842139fa}"]\n    }'
+    fi
+    printf '\n  }\n}\n'
 }
 
 if [[ ${#EXT_ID[@]} -gt 0 ]]; then
@@ -493,28 +517,36 @@ if [[ -d "$REPO/chrome" ]]; then
     done < <(find "$REPO/chrome" -type f -print0)
 fi
 
-# ── Vimium's settings ───────────────────────────────────────────────────────
-# Its options are one JSON blob per extension in storage-sync-v2.sqlite, which
+# ── Vimium's (and Vimium C's) settings ──────────────────────────────────────
+# Their options are one JSON blob per extension in storage-sync-v2.sqlite, which
 # Firefox holds open — so this is the one write that waits for it to close.
 VIMIUM_SLUG="vimium-ff"
 VIMIUM_ID="{d7742d87-e61d-4b78-b8a1-b469842139fa}"
+VIMIUMC_SLUG="vimium-c"
+VIMIUMC_ID="vimium-c@gdh1995.cn"
 
+# sync_vimium FILE EXT_ID MODE NAME
+#   replace — the row becomes FILE (Vimium: the repo is the whole truth).
+#   merge   — only FILE's keys are set, the rest of the row is kept. Vimium C
+#             writes its own keys there (vimSync, other options), and reads the
+#             row only when it is first installed, with an empty local store:
+#             so the file seeds a fresh install; later edits go in its options.
 sync_vimium() {
-    local src="$REPO/vimium-settings.json" db="$PROFILE/storage-sync-v2.sqlite"
+    local src="$REPO/$1" ext_id="$2" mode="$3" name="$4" db="$PROFILE/storage-sync-v2.sqlite"
     [[ -f "$src" ]] || return 0
     if ! has_cmd python3; then
-        warn "python3 not found — skipped the Vimium settings."
+        warn "python3 not found — skipped the $name settings."
         return 0
     fi
     if [[ "$DRY_RUN" == true ]]; then
-        would write "Vimium settings → $(tilde "$db")"
+        would write "$name settings → $(tilde "$db")"
         return 0
     fi
     local result
-    result="$(python3 - "$db" "$src" "$VIMIUM_ID" "$db.backup" <<'PY'
+    result="$(python3 - "$db" "$src" "$ext_id" "$db.backup" "$mode" <<'PY'
 import json, os, shutil, sqlite3, sys
 
-db, src, ext_id, backup = sys.argv[1:5]
+db, src, ext_id, backup, mode = sys.argv[1:6]
 want = json.load(open(src))
 
 def read_current(path):
@@ -544,7 +576,19 @@ def read_current(path):
 had_db = os.path.exists(db)
 current = read_current(db) if had_db else None
 
-if current == want:
+def plain(v):
+    # Vimium C may store a value wrapped as {"$_serialize": "single", "d": ...}.
+    if isinstance(v, dict) and v.get("$_serialize") == "single":
+        return v.get("d")
+    return v
+
+if mode == "merge":
+    base = current if isinstance(current, dict) else {}
+    if all(plain(base.get(k)) == v for k, v in want.items()):
+        print("unchanged")
+        sys.exit(0)
+    want = {**base, **want}
+elif current == want:
     print("unchanged")
     sys.exit(0)
 
@@ -578,23 +622,27 @@ con.commit()
 con.close()
 print("written")
 PY
-)" || { warn "Could not write the Vimium settings — left the profile alone."; return 0; }
+)" || { warn "Could not write the $name settings — left the profile alone."; return 0; }
 
     if [[ "$result" == unchanged ]]; then
-        skip "Vimium settings already up to date."
+        skip "$name settings already up to date."
     else
-        ok "applied vimium-settings.json (key mappings + hint/vomnibar CSS)"
+        ok "applied $1 ($name settings)"
     fi
 }
 
-if ! selected "$VIMIUM_SLUG"; then
-    skip "Vimium not selected — its settings were not written."
-elif [[ "$FF_RUNNING" == true ]]; then
-    warn "Firefox is running — deferred the Vimium settings (it holds the database open)."
-    warn "Close Firefox and re-run. Prefs + userChrome.css were applied."
-else
-    sync_vimium
-fi
+apply_vimium() {   # SLUG FILE EXT_ID MODE NAME
+    if ! selected "$1"; then
+        skip "$5 not selected — its settings were not written."
+    elif [[ "$FF_RUNNING" == true ]]; then
+        warn "Firefox is running — deferred the $5 settings (it holds the database open)."
+        warn "Close Firefox and re-run. Prefs + userChrome.css were applied."
+    else
+        sync_vimium "$2" "$3" "$4" "$5"
+    fi
+}
+apply_vimium "$VIMIUM_SLUG"  vimium-settings.json   "$VIMIUM_ID"  replace Vimium
+apply_vimium "$VIMIUMC_SLUG" vimium-c-settings.json "$VIMIUMC_ID" merge   "Vimium C"
 
 # ── Key bindings, via Mozilla's autoconfig mechanism ────────────────────────
 # firefox.cfg is the privileged script, autoconfig.js the pref that points at

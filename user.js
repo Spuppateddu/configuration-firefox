@@ -120,6 +120,8 @@ user_pref("browser.sessionstore.resume_from_crash", false);
 // ── Tabs ─────────────────────────────────────────────────────────────────────
 user_pref("browser.tabs.groups.smart.userEnabled", false);   // no AI tab grouping
 user_pref("browser.tabs.hoverPreview.showThumbnails", false);
+// No "Translate this page?" pop-up; translating by hand (page menu) still works.
+user_pref("browser.translations.automaticallyPopup", false);
 
 // ── Menu bar: no pop-up on a bare modifier tap ───────────────────────────────
 // Tapping Super (or Alt) alone showed it, so i3's Super+p play/pause did too.
@@ -170,7 +172,12 @@ user_pref("extensions.formautofill.addresses.enabled", false);
 user_pref("extensions.formautofill.creditCards.enabled", false);
 user_pref("privacy.clearOnShutdown_v2.formdata", true);
 
-// ── No speculative network chatter ───────────────────────────────────────────
-user_pref("network.prefetch-next", false);
-user_pref("network.dns.disablePrefetch", true);
-user_pref("network.http.speculative-parallel-limit", 0);
+// ── Speculative networking: on (Firefox's own defaults) ─────────────────────
+// Connecting on hover / while typing a URL, looking up link hosts early and
+// honouring <link rel=prefetch> save ~100-300 ms per page. They were turned
+// off once for privacy; with uBlock Origin the gain was small and every click
+// paid for it. Set explicitly, not just deleted: a deleted user.js line leaves
+// the old value behind in the profile's prefs.js.
+user_pref("network.prefetch-next", true);
+user_pref("network.dns.disablePrefetch", false);
+user_pref("network.http.speculative-parallel-limit", 20);
