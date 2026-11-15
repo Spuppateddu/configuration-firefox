@@ -135,7 +135,9 @@ empty local store, and from then on keeps its own copy. So
 `vimium-c-settings.json` seeds a fresh install, and `install.sh` only sets the
 keys the file names, leaving the rest of Vimium C's row alone. Change it later
 in its own options page (or remove and reinstall it to re-read the file). It
-needs no `unmap <c-d>`: Vimium C does not bind `<c-d>`.
+needs no `unmap <c-d>`: Vimium C does not bind `<c-d>`. Its one key mapping, `map W moveTabToNewWindow`,
+keeps Vimium's `W` (tab to a new window): Vimium C's own `W` moves the tab to the
+next window that is already open.
 
 ## The foldable UI
 
