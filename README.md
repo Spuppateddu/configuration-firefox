@@ -108,8 +108,9 @@ settings row written; and **ticking Vimium C without Vimium uninstalls Vimium**
 key. Tick Vimium again (and untick Vimium C) to get it back.
 
 Add a new add-on by appending a line to `extensions.conf` — its ID (from
-`about:debugging`), its addons.mozilla.org slug, a label, and `1`/`0` for whether
-it should be on by default.
+`about:debugging`), its addons.mozilla.org slug, a label, `1`/`0` for whether
+it should be on by default, and an optional `1` to let it run in private windows
+too (the policy's `private_browsing`; Vimium C has it).
 
 **Add-ons are installed by policy, not by copying `.xpi` files.** `install.sh`
 generates `/etc/firefox/policies/policies.json` with `installation_mode:

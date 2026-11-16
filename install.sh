@@ -263,12 +263,13 @@ fi
 
 # ── Add-ons: the catalogue ──────────────────────────────────────────────────
 EXT_CONF="$REPO/extensions.conf"
-EXT_ID=(); EXT_SLUG=(); EXT_LABEL=(); EXT_DEFAULT=()
+EXT_ID=(); EXT_SLUG=(); EXT_LABEL=(); EXT_DEFAULT=(); EXT_PRIVATE=()
 if [[ -f "$EXT_CONF" ]]; then
-    while IFS='|' read -r id slug label def; do
+    while IFS='|' read -r id slug label def private; do
         [[ -z "$id" || "$id" == \#* ]] && continue
         EXT_ID+=("$id"); EXT_SLUG+=("$slug"); EXT_LABEL+=("$label")
         EXT_DEFAULT+=("${def:-1}")
+        EXT_PRIVATE+=("${private:-0}")
     done < "$EXT_CONF"
 else
     warn "No extensions.conf in $(tilde "$REPO") — no add-on policy will be written."
@@ -403,7 +404,13 @@ build_policies() {
         first=false
         printf '      "%s": {\n' "${EXT_ID[$i]}"
         printf '        "installation_mode": "normal_installed",\n'
-        printf '        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/%s/latest.xpi"\n' "${EXT_SLUG[$i]}"
+        printf '        "install_url": "https://addons.mozilla.org/firefox/downloads/latest/%s/latest.xpi"' "${EXT_SLUG[$i]}"
+        # private_browsing: the add-on also runs in private windows, the same as
+        # ticking "Run in Private Windows" in about:addons.
+        if [[ "${EXT_PRIVATE[$i]}" == 1 ]]; then
+            printf ',\n        "private_browsing": true'
+        fi
+        printf '\n'
         printf '      }'
     done
     printf '\n    }'
